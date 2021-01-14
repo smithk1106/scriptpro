@@ -1,0 +1,72 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "ScriptPro Script",
+	"patterns": [
+		{
+			"include": "#keywords"
+		},
+		{
+			"include": "#strings"
+		},
+		{
+			"include": "#comments"
+		}
+	],
+	"repository": {
+		"keywords": {
+			"patterns": [
+				{
+					"name": "keyword.control.scriptpro",
+					"match": "(?i)\\b(if|then|else|endif|goto|setreturn|setparams|exit|delay|call|include)\\b"
+				},
+				{
+					"name": "keyword.mouse.scriptpro",
+					"match": "(?i)\\b(mouse\\s+(?:left|right|middle)\\s+(?:down|up|click|doubleclick)\\s*(?:at|offset){0,1}|origin\\s*(?:from){0,1})\\b"
+				},
+				{
+					"name": "keyword.key.scriptpro",
+					"match": "(?i)\\b(key\\s+(?:down|up|press)|sendkeys|settext|gettext)\\b"
+				},
+				{
+					"name": "keyword.image.scriptpro",
+					"match": "(?i)\\b((?:checkpixel|findmodel).+(?:inrect|at)|preload|capture\\s+(?:screen|window|client|rect))\\b"
+				},
+				{
+					"name": "keyword.label.scriptpro",
+					"match": "(?i)\\b(:[_a-zA-Z]+[_a-zA-Z0-9]*)\\b"
+				},
+				{
+					"name": "keyword.variable.scriptpro",
+					"match": "(?i)\\b(@[_a-zA-Z]+[_a-zA-Z0-9]*)\\b"
+				},
+				{
+					"name": "keyword.other.scriptpro",
+					"match": "(?i)\\b(invoke|msgbox|run|runandwait)\\b"
+				}
+			]
+		}, 
+		"strings": {
+			"name": "string.quoted.double.scriptpro",
+			"begin": "\"",
+			"end": "\"",
+			"patterns": [
+				{
+					"name": "constant.character.escape.scriptpro",
+					"match": "\\\\[\"rn]"
+				}
+			]
+		},
+		"comments": {
+			"name": "line.comment.scriptpro",
+			"begin": "#",
+			"end": "\n",
+			"patterns": [
+				{
+					"name": "character.escape.comment.scriptpro",
+					"match": "\\\\[\"rn]"
+				}
+			]
+		}
+	},
+	"scopeName": "source.sps"
+}
