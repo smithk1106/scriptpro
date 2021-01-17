@@ -3,16 +3,26 @@
 	"name": "ScriptPro Script",
 	"patterns": [
 		{
+			"include": "#comments"
+		},
+		{
 			"include": "#keywords"
 		},
 		{
-			"include": "#strings"
+			"include": "#labels"
 		},
 		{
-			"include": "#comments"
+			"include": "#variables"
+		},
+		{
+			"include": "#strings"
 		}
 	],
 	"repository": {
+		"comments": {
+			"name": "comment.line.scriptpro",
+			"match": "^\\s*#.*"
+		},
 		"keywords": {
 			"patterns": [
 				{
@@ -21,23 +31,15 @@
 				},
 				{
 					"name": "keyword.mouse.scriptpro",
-					"match": "(?i)\\b(mouse\\s+(?:left|right|middle)\\s+(?:down|up|click|doubleclick)\\s*(?:at|offset){0,1}|origin\\s*(?:from){0,1})\\b"
+					"match": "(?i)\\b(mouse[ \\t]+(?:left|right|middle)[ \\t]+(?:down|up|click|doubleclick)[ \\t]*(?:at|offset){0,1}|origin[ \\t]*(?:from){0,1})\\b"
 				},
 				{
 					"name": "keyword.key.scriptpro",
-					"match": "(?i)\\b(key\\s+(?:down|up|press)|sendkeys|settext|gettext)\\b"
+					"match": "(?i)\\b(key[ \\t]+(?:down|up|press)|sendkeys|settext|gettext)\\b"
 				},
 				{
 					"name": "keyword.image.scriptpro",
-					"match": "(?i)\\b((?:checkpixel|findmodel).+(?:inrect|at)|preload|capture\\s+(?:screen|window|client|rect))\\b"
-				},
-				{
-					"name": "keyword.label.scriptpro",
-					"match": "(?i)\\b(:[_a-zA-Z]+[_a-zA-Z0-9]*)\\b"
-				},
-				{
-					"name": "keyword.variable.scriptpro",
-					"match": "(?i)\\b(@[_a-zA-Z]+[_a-zA-Z0-9]*)\\b"
+					"match": "(?i)\\b((?:checkpixel|findmodel).+(?:inrect|at)|preload|capture[ \\t]+(?:screen|window|client|rect)|to[ \\t]*file)\\b"
 				},
 				{
 					"name": "keyword.other.scriptpro",
@@ -56,16 +58,13 @@
 				}
 			]
 		},
-		"comments": {
-			"name": "line.comment.scriptpro",
-			"begin": "#",
-			"end": "\n",
-			"patterns": [
-				{
-					"name": "character.escape.comment.scriptpro",
-					"match": "\\\\[\"rn]"
-				}
-			]
+		"labels": {
+			"name": "label.scriptpro",
+			"match": ":[_a-zA-Z]+[_a-zA-Z0-9]*"
+		},
+		"variables": {
+			"name": "variable.scriptpro",
+			"match": "@[_a-zA-Z]+[_a-zA-Z0-9]*"
 		}
 	},
 	"scopeName": "source.sps"

@@ -1,0 +1,24 @@
+{
+	"If expression": {
+		"prefix": "if",
+		"body": [
+			"If $1 Then",
+			"EndIf"
+		],
+		"description": "If expression"
+    },
+    "SetReturn": {
+		"prefix": "setreturn",
+		"body": [
+			"SetReturn @lRet @lX @lY"
+		],
+		"description": "SetReturn expression"
+    },
+    "Call": {
+		"prefix": "call",
+		"body": [
+			"Call \"sub_script.sps\" param1 param2 ..."
+		],
+		"description": "Call expression"
+	}
+}

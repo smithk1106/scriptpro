@@ -2,12 +2,15 @@
     "name": "scriptpro",
     "displayName": "ScriptPro",
     "description": "Edit ScriptPro scripts",
-    "version": "0.0.1",
+    "icon": "asset/ScriptPro.png",
+    "version": "1.0.0",
+    "author": "WebStory",
     "engines": {
         "vscode": "^1.52.0"
     },
     "categories": [
-        "Programming Languages"
+        "Programming Languages",
+        "Snippets"
     ],
     "contributes": {
         "languages": [{
@@ -20,6 +23,14 @@
             "language": "scriptpro",
             "scopeName": "source.sps",
             "path": "./syntaxes/scriptpro.tmLanguage.json"
+        }],
+        "snippets": [{
+            "language": "scriptpro",
+            "path": "./snippets.json"
         }]
-    }
+    },
+    "repository": {
+		"type": "git",
+		"url": "https://github.com/smithk1106/scriptpro.git"
+	}
 }
