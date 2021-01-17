@@ -2,7 +2,8 @@
 	"If expression": {
 		"prefix": "if",
 		"body": [
-			"If $1 Then",
+			"If ${1:@var1} ${2|==,!=,>,<,>=,<=|} ${3:@var2} Then",
+			"\t$4",
 			"EndIf"
 		],
 		"description": "If expression"
@@ -10,15 +11,107 @@
     "SetReturn": {
 		"prefix": "setreturn",
 		"body": [
-			"SetReturn @lRet @lX @lY"
+			"SetReturn @${1:lRet} @${2:lX} @${3:lY}"
 		],
-		"description": "SetReturn expression"
+		"description": "SetReturn @var1 @var2 ..."
     },
     "Call": {
 		"prefix": "call",
 		"body": [
-			"Call \"sub_script.sps\" param1 param2 ..."
+			"Call \"${1:sub_script}.sps\" ${2:param1}",
+			"SetReturn @sMessage",
+			"Invoke \"System.String.Format\" \"Call result: {0}\" @CallReturn",
+			"MsgBox @sMessage \"Information\" 0 16"
 		],
-		"description": "Call expression"
+		"description": "Call \"sub_script.sps\" param1 param2 ..."
+	},
+	"Include": {
+		"prefix": "include",
+		"body": [
+			"Include \"${1:sub_script}.sps\""
+		],
+		"description": "Include \"sub_script.sps\""
+	},
+
+	"Origin From": {
+		"prefix": "origin",
+		"body": [
+			"SetReturn @lRet @lX @lY",
+			"Origin From \"${1:window_tile}\" \"${2:window_class}\"",
+			"If @lRet != 0 Then",
+			"\tMsgBox \"${3:Can't find the target window.}\" \"Error\" 0 16",
+			"\tExit",
+			"EndIf"
+		],
+		"description": "Origin From \"window_tile\" \"window_class\""
+	},
+	"Mouse action": {
+		"prefix": "mouse",
+		"body": [
+			"Mouse ${1|Left,Right,Middle|} ${2|Click,DoubleClick,Down,Up|} At ${3:X}, ${4:Y}"
+		],
+		"description": "Mouse Left|Right|Middle Click|DoubleClick|Down|Up At X, Y"
+	},
+	"Key action": {
+		"prefix": "key",
+		"body": [
+			"Key ${1|Press,Down,Up|} ${2:key_code} ${3:[scan_code]}"
+		],
+		"description": "Key Down|Up|Press key_code [scan_code]"
+	},
+
+	"CheckPixel": {
+		"prefix": "checkpixel",
+		"body": [
+			"SetReturn @lRet",
+			"CheckPixel ${1:#FFFFFF} At ${2:X}, ${3:Y}",
+			"If @lRet == 0 Then",
+			"\tMsgBox \"The color at X, Y is not right.\" \"Error\" 0 16",
+			"\tExit",
+			"EndIf"
+		],
+		"description": "CheckPixel #RRGGBB At X, Y"
+	},
+	"FindModel": {
+		"prefix": "findmodel",
+		"body": [
+			"SetReturn @lRet",
+			"FindModel ${1:\"model.png\"} InRect ${2:Left}, ${3:Top}, ${4:Right}, ${5:Bottom}",
+			"If @lRet == 0 Then",
+			"\tMsgBox \"Can't find the target model!\" \"Error\" 0 16",
+			"\tExit",
+			"EndIf"
+		],
+		"description": "FindModel \"model.png\" InRect Left, Top, Right, Bottom"
+	},
+
+	"Run": {
+		"prefix": "run",
+		"body": [
+			"Run ${1:\"executable_file\"} ${2:param1}"
+		],
+		"description": "Run \"executable_file\" param1 param2 ..."
+	},
+	"RunAndWait": {
+		"prefix": "runandwait",
+		"body": [
+			"RunAndWait ${1:\"executable_file\"} ${2:param1}"
+		],
+		"description": "RunAndWait \"executable_file\" param1 param2 ..."
+	},
+	"MsgBox": {
+		"prefix": "msgbox",
+		"body": [
+			"MsgBox ${1:\"message\"} ${2:\"Error\"} 0 16"
+		],
+		"description": "MsgBox \"message\" \"title\" [button_type_code] [icon_type_code]"
+	},
+	"Invoke": {
+		"prefix": "invoke",
+		"body": [
+			"SetReturn @sRet",
+			"Invoke ${1:\"System.String.Format\"} ${2:\"P1={0\\}, P2={1\\}\"} ${3:@param1} ${4:@param2}"
+		],
+		"description": "Invoke \"full_method_name\" param1 param2 ..."
 	}
 }

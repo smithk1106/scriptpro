@@ -31,7 +31,7 @@
 				},
 				{
 					"name": "keyword.mouse.scriptpro",
-					"match": "(?i)\\b(mouse[ \\t]+(?:left|right|middle)[ \\t]+(?:down|up|click|doubleclick)[ \\t]*(?:at|offset){0,1}|origin[ \\t]*(?:from){0,1})\\b"
+					"match": "(?i)\\b(mouse[ \\t]+(?:move|left|right|middle){0,1}[ \\t]+(?:down|up|click|doubleclick){0,1}[ \\t]*(?:at|offset){0,1}|origin[ \\t]*(?:from){0,1})\\b"
 				},
 				{
 					"name": "keyword.key.scriptpro",

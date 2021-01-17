@@ -12,6 +12,10 @@
         "Programming Languages",
         "Snippets"
     ],
+    "keywords": [
+		"ScriptPro",
+		"scriptpro"
+	],
     "contributes": {
         "languages": [{
             "id": "scriptpro",
