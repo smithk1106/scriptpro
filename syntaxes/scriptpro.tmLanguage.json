@@ -64,7 +64,7 @@
 		},
 		"variables": {
 			"name": "variable.other.scriptpro",
-			"match": "[@:][_a-zA-Z]+[_a-zA-Z0-9]*"
+			"match": "@[_a-zA-Z]+[_a-zA-Z0-9]*"
 		}
 	},
 	"scopeName": "source.sps"
