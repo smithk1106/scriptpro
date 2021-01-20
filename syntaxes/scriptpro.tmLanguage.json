@@ -27,11 +27,11 @@
 			"patterns": [
 				{
 					"name": "keyword.control.scriptpro",
-					"match": "(?i)\\b(if|then|else|endif|goto|setreturn|setparams|exit|delay|call|include)\\b"
+					"match": "(?i)\\b(if|then|else|endif|goto|setreturn|random|exit|delay|defdelay|call|include|use|unset)\\b"
 				},
 				{
 					"name": "keyword.mouse.scriptpro",
-					"match": "(?i)\\b(mouse[ \\t]+(?:move|left|right|middle){0,1}[ \\t]+(?:down|up|click|doubleclick){0,1}[ \\t]*(?:at|offset){0,1}|origin[ \\t]*(?:from){0,1})\\b"
+					"match": "(?i)\\b(mouse[ \\t]+(?:move|left|right|middle)[ \\t]+(?:down|up|click|doubleclick){0,1}[ \\t]*(?:at|offset){0,1}|origin[ \\t]*(?:from){0,1})\\b"
 				},
 				{
 					"name": "keyword.key.scriptpro",
@@ -39,11 +39,11 @@
 				},
 				{
 					"name": "keyword.image.scriptpro",
-					"match": "(?i)\\b((?:checkpixel|findmodel).+(?:inrect|at)|preload|capture[ \\t]+(?:screen|window|client|rect)|to[ \\t]*file)\\b"
+					"match": "(?i)\\b((?:checkpixel|findpixel|findmodel).+(?:inrect|at)|preload|capture[ \\t]+(?:screen|window|client|rect)|to[ \\t]*file)\\b"
 				},
 				{
 					"name": "keyword.other.scriptpro",
-					"match": "(?i)\\b(invoke|msgbox|run|runandwait)\\b"
+					"match": "(?i)\\b(invoke|msgbox|run|runandwait|monitor[ \t](?:on|off)|messagemode[ \t](?:on|off)|onerror|resume[ \t]+next)\\b"
 				}
 			]
 		}, 
@@ -59,12 +59,12 @@
 			]
 		},
 		"labels": {
-			"name": "label.scriptpro",
+			"name": "variable.language.scriptpro",
 			"match": ":[_a-zA-Z]+[_a-zA-Z0-9]*"
 		},
 		"variables": {
-			"name": "variable.scriptpro",
-			"match": "@[_a-zA-Z]+[_a-zA-Z0-9]*"
+			"name": "variable.other.scriptpro",
+			"match": "[@:][_a-zA-Z]+[_a-zA-Z0-9]*"
 		}
 	},
 	"scopeName": "source.sps"

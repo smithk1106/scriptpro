@@ -47,21 +47,23 @@
             {
                 "command": "scriptpro.format",
                 "category": "ScriptPro",
-                "title": "Format current script"
+                "title": "Format"
             },
             {
                 "command": "scriptpro.run",
                 "category": "ScriptPro",
-                "title": "Run current script"
+                "title": "Run this script"
             }
         ],
         "menus": {
             "editor/context": [
               {
+                "when": "resourceLangId == scriptpro",
                 "command": "scriptpro.format",
                 "group": "ScriptPro@1"
               },
               {
+                "when": "resourceLangId == scriptpro",
                 "command": "scriptpro.run",
                 "group": "ScriptPro@2"
               }
@@ -82,8 +84,14 @@
         "properties": {
             "scriptpro.playerPath": {
                 "type": "string",
-                "default": "./bin/ScriptPlayer.exe",
+                "default": "bin/ScriptPlayer.exe",
                 "description": "The location of the script player for ScriptPro.",
+                "scope": "application"
+            },
+            "scriptpro.silent": {
+                "type": "boolean",
+                "default": "true",
+                "description": "Start script player in background and auto start it.",
                 "scope": "application"
             }
         }
