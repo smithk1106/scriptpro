@@ -14,7 +14,14 @@
 			"SetReturn @${1:lRet} @${2:lX} @${3:lY}"
 		],
 		"description": "SetReturn @var1 @var2 ..."
-    },
+	},
+	"Random": {
+		"prefix": "random",
+		"body": [
+			"Random 10 1000 @${1:lVar1} @${2:lVar2}"
+		],
+		"description": "Random min_int_value max_int_value @var1 @var2 ..."
+	},
     "Call": {
 		"prefix": "call",
 		"body": [

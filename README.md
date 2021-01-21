@@ -21,5 +21,5 @@ This extension contributes the following settings:
 
 ## Release Notes
 
-Please read changelog.md.
+Please read CHANGELOG.md.
 

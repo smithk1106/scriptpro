@@ -82,6 +82,36 @@ export function activate(context: vscode.ExtensionContext) {
 					console.log(err);
 					vscode.window.showErrorMessage('Failed to start script player!');
 				} else {
+					if(stderr && stderr.trim().length > 0) {
+						let errorMsg = stderr;
+						let pos = stderr.indexOf('*');
+						if(pos >= 0) {
+							errorMsg = stderr.substring(pos + 1);
+						}
+						vscode.window.showErrorMessage(errorMsg);
+
+						const match = errorMsg.match(/(?:variable '([^']*)'){0,1} in line (\d+)/);
+						if(match) {
+							// Get line number
+							let lineNum:number = parseInt(match[2]) - 1;
+							let line:vscode.TextLine = editor.document.lineAt(lineNum);
+							// Try get variable anme
+							let varName = (match[1] ? match[1] : '');
+							let varPos:number = -1;
+							if(varName.length > 0) {
+								varPos = line.text.indexOf(varName);
+							}
+							// Create selection
+							if(varPos >= 0) {
+								// Select error variable
+								editor.selection = new vscode.Selection(lineNum, varPos, lineNum, varPos + varName.length);
+							} else {
+								// Select error line
+								editor.selection = new vscode.Selection(line.range.start, line.range.end);
+							}
+							editor.revealRange(editor.selection);
+						}
+					}
 					vscode.window.showInformationMessage('Stoped ' + scriptPath);
 				}
 			});
@@ -112,7 +142,11 @@ function formatCommonParams(pattern: RegExp, paramPart: string) {
 	let curMatch;
 
 	while (curMatch = pattern.exec(paramPart)) {
-		params += ' ' + curMatch[0];
+		if(curMatch[1] && curMatch[1].length > 1) {
+			params += ' ' + curMatch[1].charAt(0).toUpperCase() + curMatch[1].substring(1).toLowerCase();
+		} else {
+			params += ' ' + curMatch[0];
+		}
 	}
 
 	return params;
@@ -130,26 +164,26 @@ function formatScript(text: string): string {
 		let newLine: string = '';
 
 		if (curLine.length > 0) {
-			// Split action part and parameter part
-			pos = curLine.indexOf(' ');
-			if (pos > 0) {
-				partAction = curLine.substring(0, pos);
-				partParam = curLine.substring(pos).trim();
-			} else {
-				partAction = curLine;
-				partParam = '';
-			}
-
-			// Check and format variables and labels
-			if (partAction.startsWith('@')) {
-				const match = partParam.match(/(\:\=|\+\=|\-\=|\*\=|\%\=)\s*(.+)/);
+			if (curLine.startsWith('@')) {
+				// Format variables
+				const match = curLine.match(/(@[a-zA-Z_]+[a-zA-Z0-9_]*)\s*(\:\=|\+\=|\-\=|\*\=|\%\=)\s*(.+)/);
 				if (match) {
-					newLine = util.format('%s%s %s %s', curIndent, partAction, match[1], match[2].trim());
-					//console.log('[D]' + newLine)
+					newLine = util.format('%s%s %s %s', curIndent, match[1], match[2], match[3].trim());
 				}
-			} else if (partAction.startsWith(':')) {
-				newLine = curIndent + partAction;
+			} else if (curLine.startsWith(':')) {
+				// Format labels
+				newLine = curIndent + curLine;
 			} else {
+				// Split action part and parameter part
+				pos = curLine.indexOf(' ');
+				if (pos > 0) {
+					partAction = curLine.substring(0, pos);
+					partParam = curLine.substring(pos).trim();
+				} else {
+					partAction = curLine;
+					partParam = '';
+				}
+				
 				// Check and format actions
 				partAction = partAction.toLowerCase();
 				if (partAction == 'if') {
@@ -253,7 +287,7 @@ function formatScript(text: string): string {
 						+ formatCommonParams(/"[^"]*"|@{0,1}[a-zA-Z_]+[a-zA-Z0-9_]*|-{0,1}[0-9]+/g, partParam);
 				} else if (partAction == 'key') {
 					newLine = curIndent + 'Key'
-						+ formatCommonParams(/down|up|press|[a-zA-Z0-9]+/g, partParam);
+						+ formatCommonParams(/(down|up|press)|[a-zA-Z0-9]+/g, partParam);
 				} else if (partAction == 'sendkeys') {
 					newLine = util.format('%sSendKeys %s', curIndent, partParam);
 				} else if (partAction == 'settext') {
@@ -292,25 +326,21 @@ function formatScript(text: string): string {
 						newLine += formatCommonParams(/"[^"]*"|@{0,1}[a-zA-Z_]+[a-zA-Z0-9_]*|[0-9]+/g, partParam);
 					}
 				} else if (partAction == 'mouse') {
-					const match = partParam.match(/(move|left|right|middle)\s+(down|up|click|doubleclick){0,1}\s*(at|offset){0,1}\s*(-{0,1}\d*)[ \t,]*(-{0,1}\d*)/i);
-					if (match) {
-						//console.log(match);	//DEBUG
-						newLine = util.format('%sMouse %s%s', curIndent, match[1].charAt(0).toUpperCase(), match[1].substring(1).toLowerCase());
-						if (match[2] != null && match[2].length > 0) {
-							newLine += ' ' + match[2].charAt(0).toUpperCase() + match[2].substring(1).toLowerCase();
-						}
-						if (match[3] != null && match[3].length > 0) {
-							newLine += ' ' + match[3].charAt(0).toUpperCase() + match[3].substring(1).toLowerCase();
-						}
-						if (match[4] != null && match[4].length > 0) {
-							newLine += ' ' + match[4];
-						}
-						if (match[5] != null && match[5].length > 0) {
-							newLine += ' ' + match[5];
-						}
-					} else {
-						newLine = util.format('%sMouse %s', curIndent, partParam);
-					}
+					//const matches = matchAll(/(left|right|middle|move|down|up|click|doubleclick|at|offset)|@[a-zA-Z_]+[a-zA-Z0-9_]*|-{0,1}\d+/g, partParam);
+					
+					newLine = curIndent + 'Mouse';
+					// if (matches.length > 0) {
+					// 	console.log(matches);	//DEBUG
+					// 	for(pos = 0; pos < matches.length; pos++){
+					// 		let groupText = matches[pos][1];
+					// 		if(groupText && groupText.length > 0) {
+					// 			newLine += ' ' + groupText.charAt(0).toUpperCase() + groupText.substring(1).toLowerCase();
+					// 		} else {
+					// 			newLine += ' ' + matches[pos][0];
+					// 		}
+					// 	}
+					// }
+					newLine += formatCommonParams(/(left|right|middle|move|down|up|click|doubleclick|at|offset)|@[a-zA-Z_]+[a-zA-Z0-9_]*|-{0,1}\d+/ig, partParam);
 				}
 			}
 

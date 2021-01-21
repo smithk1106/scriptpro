@@ -9,5 +9,14 @@ All notable changes to the "ScriptPro" extension will be documented in this file
 ## [1.0.0] - 2020-01-20
 ### Added
 - ScriptPro script language support.
-- Add "format" and "Run this script" commands
+- Add "Format" and "Run this script" commands
 - Add script player for windows 8/10
+
+## [1.0.1] - 2020-01-21
+### Added
+- Highlight the error line when player failed.
+- Added "random" snippet.
+### Fixed
+- Changed error message for missing include file.
+- Mouse action format problem.
+- Origin action format problem.
