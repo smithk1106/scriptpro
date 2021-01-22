@@ -20,3 +20,10 @@ All notable changes to the "ScriptPro" extension will be documented in this file
 - Changed error message for missing include file.
 - Mouse action format problem.
 - Origin action format problem.
+
+## [1.0.2] - 2020-01-22
+### Added
+- Added "sound" snippet.
+### Fixed
+- Random action compile problem.
+- "On Error Resume Next" action can't be effected problem.

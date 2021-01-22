@@ -3,7 +3,7 @@
     "displayName": "ScriptPro",
     "description": "Edit ScriptPro scripts",
     "icon": "asset/ScriptPro.png",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "author": "WebStory",
     "publisher": "WebStory",
     "engines": {
@@ -53,6 +53,31 @@
                 "command": "scriptpro.run",
                 "category": "ScriptPro",
                 "title": "Run this script"
+            },
+            {
+                "command": "scriptpro.upper",
+                "category": "ScriptPro",
+                "title": "To uppercase"
+            },
+            {
+                "command": "scriptpro.lower",
+                "category": "ScriptPro",
+                "title": "To lowercase"
+            },
+            {
+                "command": "scriptpro.proper",
+                "category": "ScriptPro",
+                "title": "To propercase"
+            }
+        ],
+        "keybindings": [
+            {
+                "command": "scriptpro.format",
+                "key": "ctrl+alt+f"
+            },
+            {
+                "command": "scriptpro.run",
+                "key": "ctrl+shift+r"
             }
         ],
         "menus": {
@@ -66,13 +91,31 @@
                 "when": "resourceLangId == scriptpro",
                 "command": "scriptpro.run",
                 "group": "ScriptPro@2"
+              },
+              {
+                "when": "editorHasSelection",
+                "command": "scriptpro.upper",
+                "group": "ScriptPro@3"
+              },
+              {
+                "when": "editorHasSelection",
+                "command": "scriptpro.lower",
+                "group": "ScriptPro@4"
+              },
+              {
+                "when": "editorHasSelection",
+                "command": "scriptpro.proper",
+                "group": "ScriptPro@5"
               }
             ]
         }
     },
     "activationEvents": [
         "onCommand:scriptpro.format",
-        "onCommand:scriptpro.run"
+        "onCommand:scriptpro.run",
+        "onCommand:scriptpro.upper",
+        "onCommand:scriptpro.lower",
+        "onCommand:scriptpro.proper"
 	],
     "repository": {
         "type": "git",

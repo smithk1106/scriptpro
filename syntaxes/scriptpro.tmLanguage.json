@@ -39,11 +39,11 @@
 				},
 				{
 					"name": "keyword.image.scriptpro",
-					"match": "(?i)\\b((?:checkpixel|findpixel|findmodel).+(?:inrect|at)|preload|capture[ \\t]+(?:screen|window|client|rect)|to[ \\t]*file)\\b"
+					"match": "(?i)\\b((?:checkpixel|findpixel|findmodel).+(?:inrect|at)|by|preload|capture[ \\t]+(?:screen|window|client|rect)|to[ \\t]*file)\\b"
 				},
 				{
 					"name": "keyword.other.scriptpro",
-					"match": "(?i)\\b(invoke|msgbox|run|runandwait|monitor[ \t](?:on|off)|messagemode[ \t](?:on|off)|onerror|resume[ \t]+next)\\b"
+					"match": "(?i)\\b(invoke|msgbox|run|runandwait|sound|monitor[ \t](?:on|off)|messagemode[ \t](?:on|off)|onerror|resume[ \t]+next)\\b"
 				}
 			]
 		}, 

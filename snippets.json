@@ -120,5 +120,12 @@
 			"Invoke ${1:\"System.String.Format\"} ${2:\"P1={0\\}, P2={1\\}\"} ${3:@param1} ${4:@param2}"
 		],
 		"description": "Invoke \"full_method_name\" param1 param2 ..."
+	},
+	"Sound": {
+		"prefix": "sound",
+		"body": [
+			"Sound ${1:\"C:\\Windows\\media\\Ring10.wav\"} ${2:5000}"
+		],
+		"description": "Sound \"sound_file\" [play_time(Unit:ms)]"
 	}
 }

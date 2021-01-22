@@ -85,31 +85,38 @@ export function activate(context: vscode.ExtensionContext) {
 					if(stderr && stderr.trim().length > 0) {
 						let errorMsg = stderr;
 						let pos = stderr.indexOf('*');
+						let errorFile = '';
 						if(pos >= 0) {
+							errorFile = errorMsg.substring(0, pos).trim();
 							errorMsg = stderr.substring(pos + 1);
 						}
-						vscode.window.showErrorMessage(errorMsg);
 
-						const match = errorMsg.match(/(?:variable '([^']*)'){0,1} in line (\d+)/);
-						if(match) {
-							// Get line number
-							let lineNum:number = parseInt(match[2]) - 1;
-							let line:vscode.TextLine = editor.document.lineAt(lineNum);
-							// Try get variable anme
-							let varName = (match[1] ? match[1] : '');
-							let varPos:number = -1;
-							if(varName.length > 0) {
-								varPos = line.text.indexOf(varName);
+						if(errorFile.toLowerCase() == editor.document.fileName.toLowerCase()) {
+							vscode.window.showErrorMessage(errorMsg);
+
+							const match = errorMsg.match(/(?:variable '([^']*)'){0,1} in line (\d+)/);
+							if(match) {
+								// Get line number
+								let lineNum:number = parseInt(match[2]) - 1;
+								let line:vscode.TextLine = editor.document.lineAt(lineNum);
+								// Try get variable anme
+								let varName = (match[1] ? match[1] : '');
+								let varPos:number = -1;
+								if(varName.length > 0) {
+									varPos = line.text.indexOf(varName);
+								}
+								// Create selection
+								if(varPos >= 0) {
+									// Select error variable
+									editor.selection = new vscode.Selection(lineNum, varPos, lineNum, varPos + varName.length);
+								} else {
+									// Select error line
+									editor.selection = new vscode.Selection(line.range.start, line.range.end);
+								}
+								editor.revealRange(editor.selection);
 							}
-							// Create selection
-							if(varPos >= 0) {
-								// Select error variable
-								editor.selection = new vscode.Selection(lineNum, varPos, lineNum, varPos + varName.length);
-							} else {
-								// Select error line
-								editor.selection = new vscode.Selection(line.range.start, line.range.end);
-							}
-							editor.revealRange(editor.selection);
+						} else {
+							vscode.window.showErrorMessage(errorFile + '\n  *' + errorMsg, { modal: true });
 						}
 					}
 					vscode.window.showInformationMessage('Stoped ' + scriptPath);
@@ -121,6 +128,50 @@ export function activate(context: vscode.ExtensionContext) {
 		//vscode.window.showInformationMessage('I am creating "scriptpro.run" now, please wait!');
 	});
 	context.subscriptions.push(runDisposable);
+
+	let upperDisposable = vscode.commands.registerCommand('scriptpro.upper', () => {
+		const editor = vscode.window.activeTextEditor;
+		if (editor != null && editor.selection != null) {
+			let selectedText = editor.document.getText(editor.selection).trim();
+
+			if(selectedText.length > 0) {
+				editor.edit((builder: vscode.TextEditorEdit) => {
+					builder.replace(editor.selection, selectedText.toUpperCase());
+				});
+			}
+		}
+	});
+	context.subscriptions.push(upperDisposable);
+
+	let lowerDisposable = vscode.commands.registerCommand('scriptpro.lower', () => {
+		const editor = vscode.window.activeTextEditor;
+		if (editor != null && editor.selection != null) {
+			let selectedText = editor.document.getText(editor.selection).trim();
+
+			if(selectedText.length > 0) {
+				editor.edit((builder: vscode.TextEditorEdit) => {
+					builder.replace(editor.selection, selectedText.toLowerCase());
+				});
+			}
+		}
+	});
+	context.subscriptions.push(lowerDisposable);
+
+	let properDisposable = vscode.commands.registerCommand('scriptpro.proper', () => {
+		const editor = vscode.window.activeTextEditor;
+		if (editor != null && editor.selection != null) {
+			let selectedText = editor.document.getText(editor.selection).trim();
+
+			if(selectedText.length > 0) {
+				editor.edit((builder: vscode.TextEditorEdit) => {
+					selectedText = selectedText.charAt(0).toUpperCase() + selectedText.substring(1).toLowerCase();
+					console.log('[D]ProperCase: ' + selectedText);
+					builder.replace(editor.selection, selectedText);
+				});
+			}
+		}
+	});
+	context.subscriptions.push(properDisposable);
 }
 
 // this method is called when your extension is deactivated
