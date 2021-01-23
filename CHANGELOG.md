@@ -27,3 +27,10 @@ All notable changes to the "ScriptPro" extension will be documented in this file
 ### Fixed
 - Random action compile problem.
 - "On Error Resume Next" action can't be effected problem.
+
+## [1.0.3] - 2020-01-23
+### Added
+- Added debug output channel.
+- FindModel action can use transparent colors now.
+### Fixed
+- Correct a format problem for CheckPixel, FindPixel and FindModel actions.

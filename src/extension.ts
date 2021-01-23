@@ -50,6 +50,11 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(formatDisposable);
 
 	let runDisposable = vscode.commands.registerCommand('scriptpro.run', () => {
+		//Create output channel
+		const myChannel = vscode.window.createOutputChannel("ScritPro");
+		myChannel.clear();
+		myChannel.show(false);
+
 		const path = require("path");
 		const editor = vscode.window.activeTextEditor;
 		if (editor != null) {
@@ -59,7 +64,7 @@ export function activate(context: vscode.ExtensionContext) {
 				return;
 			}
 
-			// Run script
+			// Prepare parameters
 			const baseDir = context.extensionPath;
 			const localConfig = vscode.workspace.getConfiguration('scriptpro');
 
@@ -70,57 +75,75 @@ export function activate(context: vscode.ExtensionContext) {
 			const process = require('child_process')
 			let payerPath = path.resolve(baseDir, localConfig.get<string>('playerPath', 'bin/ScriptPlayer.exe'));
 			let silentFlag = (localConfig.get<boolean>('silent', true) ? '/silent' : '');
-			let cmd: string = util.format('%s "%s" %s', payerPath, scriptPath, silentFlag);
 
-			cmd = cmd.trim()
+			// Run script
+			myChannel.appendLine('[i]Start ' + scriptPath);
+			myChannel.appendLine('[i]Press "Ctrl+T" to stop the script.');
 			vscode.window.showInformationMessage('Start ' + scriptPath);
 			vscode.window.showInformationMessage('Press "Ctrl+T" to stop the script.');
-			process.exec(cmd, (err: object, stdout: string, stderr: string) => {
-				console.log('[D]stdout: ' + stdout);
-				console.log('[D]stderr: ' + stderr);
-				if (err) {
-					console.log(err);
-					vscode.window.showErrorMessage('Failed to start script player!');
-				} else {
-					if(stderr && stderr.trim().length > 0) {
-						let errorMsg = stderr;
-						let pos = stderr.indexOf('*');
-						let errorFile = '';
-						if(pos >= 0) {
-							errorFile = errorMsg.substring(0, pos).trim();
-							errorMsg = stderr.substring(pos + 1);
-						}
+	
+			let cmdSpawn = process.spawn(payerPath, [ scriptPath, silentFlag ]);
+			cmdSpawn.stdout.on('data', function (data:any) {
+				console.log(data.toString());
+				myChannel.appendLine(data.toString());
+			});
+			
+			cmdSpawn.stderr.on('data', function (data:any) {
+				console.log('[E]stderr: ' + data.toString());
+				myChannel.appendLine(data.toString());
 
-						if(errorFile.toLowerCase() == editor.document.fileName.toLowerCase()) {
-							vscode.window.showErrorMessage(errorMsg);
-
-							const match = errorMsg.match(/(?:variable '([^']*)'){0,1} in line (\d+)/);
-							if(match) {
-								// Get line number
-								let lineNum:number = parseInt(match[2]) - 1;
-								let line:vscode.TextLine = editor.document.lineAt(lineNum);
-								// Try get variable anme
-								let varName = (match[1] ? match[1] : '');
-								let varPos:number = -1;
-								if(varName.length > 0) {
-									varPos = line.text.indexOf(varName);
-								}
-								// Create selection
-								if(varPos >= 0) {
-									// Select error variable
-									editor.selection = new vscode.Selection(lineNum, varPos, lineNum, varPos + varName.length);
-								} else {
-									// Select error line
-									editor.selection = new vscode.Selection(line.range.start, line.range.end);
-								}
-								editor.revealRange(editor.selection);
-							}
-						} else {
-							vscode.window.showErrorMessage(errorFile + '\n  *' + errorMsg, { modal: true });
-						}
+				const dataStr = data.toString().trim();
+				if(dataStr.length > 0) {
+					let errorMsg = dataStr;
+					let pos = dataStr.indexOf('*');
+					let errorFile = '';
+					if(pos >= 0) {
+						errorFile = errorMsg.substring(0, pos).trim();
+						errorMsg = dataStr.substring(pos + 1);
 					}
-					vscode.window.showInformationMessage('Stoped ' + scriptPath);
+
+					if(errorFile.toLowerCase() == editor.document.fileName.toLowerCase()) {
+						vscode.window.showErrorMessage(errorMsg);
+
+						const match = errorMsg.match(/(?:variable '([^']*)'){0,1} in line (\d+)/);
+						if(match) {
+							// Get line number
+							let lineNum:number = parseInt(match[2]) - 1;
+							let line:vscode.TextLine = editor.document.lineAt(lineNum);
+							// Try get variable anme
+							let varName = (match[1] ? match[1] : '');
+							let varPos:number = -1;
+							if(varName.length > 0) {
+								varPos = line.text.indexOf(varName);
+							}
+							// Create selection
+							if(varPos >= 0) {
+								// Select error variable
+								editor.selection = new vscode.Selection(lineNum, varPos, lineNum, varPos + varName.length);
+							} else {
+								// Select error line
+								editor.selection = new vscode.Selection(line.range.start, line.range.end);
+							}
+							editor.revealRange(editor.selection);
+						}
+					} else {
+						vscode.window.showErrorMessage(errorFile + '\n  *' + errorMsg, { modal: true });
+					}
 				}
+			});
+			
+			cmdSpawn.on('close', function (code:number) {
+				let logStr = '[i]Script "' + scriptPath + '" stoped with code: ' + code;
+				console.log(logStr);
+				myChannel.appendLine(logStr);
+				vscode.window.showInformationMessage('Stoped ' + scriptPath);
+			});
+
+			cmdSpawn.stdout.on('error', function (err:any) {
+				let logStr = '[E]Error' + err.toString();
+				console.log(logStr);
+				myChannel.appendLine(logStr);
+				vscode.window.showErrorMessage('Failed to start script player!');
 			});
 		}
 
@@ -196,7 +219,7 @@ function formatCommonParams(pattern: RegExp, paramPart: string) {
 		if(curMatch[1] && curMatch[1].length > 1) {
 			params += ' ' + curMatch[1].charAt(0).toUpperCase() + curMatch[1].substring(1).toLowerCase();
 		} else {
-			params += ' ' + curMatch[0];
+			params += ' ' + curMatch[0].trim();
 		}
 	}
 
@@ -326,19 +349,19 @@ function formatScript(text: string): string {
 					}
 				} else if (partAction == 'checkpixel') {
 					newLine = curIndent + 'CheckPixel'
-						+ formatCommonParams(/#[0-9a-f]+|@{0,1}[a-zA-Z_]+[a-zA-Z0-9_]*|-{0,1}[0-9]+/g, partParam);
+						+ formatCommonParams(/(at|offset)|#[0-9A-F]{1,6}:{0,1}[0-9A-F]{0,2}|@[a-zA-Z_]+[a-zA-Z0-9_]*|[ \t,]+-{0,1}[0-9]+/ig, partParam);
 				} else if (partAction == 'findpixel') {
 					newLine = curIndent + 'FindPixel'
-						+ formatCommonParams(/#[0-9a-f]+|@{0,1}[a-zA-Z_]+[a-zA-Z0-9_]*|-{0,1}[0-9]+/g, partParam);
+						+ formatCommonParams(/(inrect|repeat)|#[0-9A-F]{1,6}:{0,1}[0-9A-F]{0,2}|@{0,1}[a-zA-Z_]+[a-zA-Z0-9_]*|[ \t,]+-{0,1}[0-9]+/ig, partParam);
 				} else if (partAction == 'findmodel') {
 					newLine = curIndent + 'FindModel'
-						+ formatCommonParams(/"[^"]*"|@{0,1}[a-zA-Z_]+[a-zA-Z0-9_]*|-{0,1}[0-9]+/g, partParam);
+						+ formatCommonParams(/(inrect|prelod|wait|by)|#[0-9A-F]{1,6}:{0,1}[0-9A-F]{0,2}|"[^"]*"|@[a-zA-Z_]+[a-zA-Z0-9_]*|[ \t,]+-{0,1}[0-9]+/ig, partParam);
 				} else if (partAction == 'capture') {
 					newLine = curIndent + 'Capture'
-						+ formatCommonParams(/"[^"]*"|@{0,1}[a-zA-Z_]+[a-zA-Z0-9_]*|-{0,1}[0-9]+/g, partParam);
+						+ formatCommonParams(/(screen|window|client|rect|to|file)|"[^"]*"|@[a-zA-Z_]+[a-zA-Z0-9_]*|-{0,1}[0-9]+/ig, partParam);
 				} else if (partAction == 'key') {
 					newLine = curIndent + 'Key'
-						+ formatCommonParams(/(down|up|press)|[a-zA-Z0-9]+/g, partParam);
+						+ formatCommonParams(/(down|up|press)|[a-zA-Z0-9]+/ig, partParam);
 				} else if (partAction == 'sendkeys') {
 					newLine = util.format('%sSendKeys %s', curIndent, partParam);
 				} else if (partAction == 'settext') {

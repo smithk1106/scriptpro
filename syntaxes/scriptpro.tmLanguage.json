@@ -39,7 +39,7 @@
 				},
 				{
 					"name": "keyword.image.scriptpro",
-					"match": "(?i)\\b((?:checkpixel|findpixel|findmodel).+(?:inrect|at)|by|preload|capture[ \\t]+(?:screen|window|client|rect)|to[ \\t]*file)\\b"
+					"match": "(?i)\\b((?:checkpixel|findpixel|findmodel).+(?:inrect|at|offset)|by|repeat|preload|wait|capture[ \\t]+(?:screen|window|client|rect)|to[ \\t]*file)\\b"
 				},
 				{
 					"name": "keyword.other.scriptpro",
