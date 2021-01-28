@@ -1,6 +1,7 @@
 # ScriptPro
 
 A simple script language that can help you to do mouse and keyborad actions automaticly.
+You can use it to do some repeated works auto play some games.
 
 ## Features
 
@@ -18,6 +19,7 @@ This extension contributes the following settings:
 
 * `scriptpro.playerPath`: Set the script player path.
 * `scriptpro.silent`: Run current script.
+* `scriptpro.tool`: Open script tool.
 * `scriptpro.upper`: Set a selection to uppercase.
 * `scriptpro.lower`: Set a selection to lowercase
 * `scriptpro.proper`: Set a selection to propercase.

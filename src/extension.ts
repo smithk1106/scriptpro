@@ -2,10 +2,12 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import util = require('util');
+import { Buffer } from 'buffer';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+	const myChannel = vscode.window.createOutputChannel("ScritPro");
 
 	// Use the console to output diagnostic information (console.log) and errors (console.error)
 	// This line of code will only be executed once when your extension is activated
@@ -51,7 +53,6 @@ export function activate(context: vscode.ExtensionContext) {
 
 	let runDisposable = vscode.commands.registerCommand('scriptpro.run', () => {
 		//Create output channel
-		const myChannel = vscode.window.createOutputChannel("ScritPro");
 		myChannel.clear();
 		myChannel.show(false);
 
@@ -84,13 +85,14 @@ export function activate(context: vscode.ExtensionContext) {
 	
 			let cmdSpawn = process.spawn(payerPath, [ scriptPath, silentFlag ]);
 			cmdSpawn.stdout.on('data', function (data:any) {
-				console.log(data.toString());
-				myChannel.appendLine(data.toString());
+				const strData:string = data.toString();
+				console.log(strData);
+				myChannel.append(strData);
 			});
 			
 			cmdSpawn.stderr.on('data', function (data:any) {
 				console.log('[E]stderr: ' + data.toString());
-				myChannel.appendLine(data.toString());
+				myChannel.appendLine('[E]' + data.toString());
 
 				const dataStr = data.toString().trim();
 				if(dataStr.length > 0) {
@@ -151,6 +153,90 @@ export function activate(context: vscode.ExtensionContext) {
 		//vscode.window.showInformationMessage('I am creating "scriptpro.run" now, please wait!');
 	});
 	context.subscriptions.push(runDisposable);
+
+	let toolDisposable = vscode.commands.registerCommand('scriptpro.tool', () => {
+		//Create output channel
+		myChannel.clear();
+		myChannel.show(false);
+
+		const path = require("path");
+		const editor = vscode.window.activeTextEditor;
+		if (editor != null) {
+			let scriptPath = editor.document.fileName;
+
+			// Prepare parameters
+			const baseDir = context.extensionPath;
+			const localConfig = vscode.workspace.getConfiguration('scriptpro');
+
+			const process = require('child_process')
+			let payerPath = path.resolve(baseDir, localConfig.get<string>('playerPath', 'bin/ScriptPlayer.exe'));
+			let silentFlag = (localConfig.get<boolean>('silent', true) ? '/tool' : '');
+
+			// Run script
+			myChannel.appendLine('[i]Open script tool.');
+	
+			let cmdSpawn = process.spawn(payerPath, [ scriptPath, silentFlag ]);
+			cmdSpawn.stdout.on('data', function (data:any) {
+				const strData:string = data.toString().trim();
+				console.log(strData);
+				myChannel.append(strData);
+				if(strData.startsWith('[RECORD]')) {
+					const lastLine = editor.document.lineAt(editor.document.lineCount - 1);
+					const curRange = new vscode.Range(
+						lastLine.range.start,
+						lastLine.range.end
+					);
+					editor.edit((builder: vscode.TextEditorEdit) => {
+						let scriptBlock = Buffer.from(strData.substring(8), 'base64').toString();
+						builder.replace(curRange, scriptBlock);
+						//builder.insert(lastLine.range.end, scriptBlock);
+					});
+
+					// let scriptBlock = '';
+					// const arrLines = strData.split(/[\r\n]+/);
+					// for (const i in arrLines) {
+					// 	const line = arrLines[i].trim();
+					// 	if (line.startsWith('[RECORD]')) {
+					// 		//console.log('[D]' + line.substring(8) + ' => ' + Buffer.from(line.substring(8), 'base64').toString());
+					// 		scriptBlock += Buffer.from(line.substring(8), 'base64').toString() + '\n';
+					// 	}
+					// }
+
+					// if(scriptBlock.length > 0) {
+					// 	console.log('[D]' + scriptBlock);
+					// 	const lastLine = editor.document.lineAt(editor.document.lineCount - 1);
+					// 	const curRange = new vscode.Range(
+					// 		lastLine.range.start,
+					// 		lastLine.range.end
+					// 	);
+					// 	editor.edit((builder: vscode.TextEditorEdit) => {
+					// 		builder.replace(curRange, scriptBlock);
+					// 		//builder.insert(lastLine.range.end, scriptBlock);
+					// 	});
+					// }
+				}
+			});
+			
+			cmdSpawn.stderr.on('data', function (data:any) {
+				console.log('[E]stderr: ' + data.toString());
+				myChannel.appendLine('[E]' + data.toString());
+			});
+
+			cmdSpawn.on('close', function (code:number) {
+				let logStr = '[i]Script tool stoped with code: ' + code;
+				console.log(logStr);
+				myChannel.appendLine(logStr);
+			});
+
+			cmdSpawn.stdout.on('error', function (err:any) {
+				let logStr = '[E]Error' + err.toString();
+				console.log(logStr);
+				myChannel.appendLine(logStr);
+				vscode.window.showErrorMessage('Failed to start script tool!');
+			});
+		}
+	});
+	context.subscriptions.push(toolDisposable);
 
 	let upperDisposable = vscode.commands.registerCommand('scriptpro.upper', () => {
 		const editor = vscode.window.activeTextEditor;
@@ -355,7 +441,7 @@ function formatScript(text: string): string {
 						+ formatCommonParams(/(inrect|repeat)|#[0-9A-F]{1,6}:{0,1}[0-9A-F]{0,2}|@{0,1}[a-zA-Z_]+[a-zA-Z0-9_]*|[ \t,]+-{0,1}[0-9]+/ig, partParam);
 				} else if (partAction == 'findmodel') {
 					newLine = curIndent + 'FindModel'
-						+ formatCommonParams(/(inrect|prelod|wait|by)|#[0-9A-F]{1,6}:{0,1}[0-9A-F]{0,2}|"[^"]*"|@[a-zA-Z_]+[a-zA-Z0-9_]*|[ \t,]+-{0,1}[0-9]+/ig, partParam);
+						+ formatCommonParams(/(inrect|preload|wait|by)|#[0-9A-F]{1,6}:{0,1}[0-9A-F]{0,2}|"[^"]*"|@[a-zA-Z_]+[a-zA-Z0-9_]*|[ \t,]+-{0,1}[0-9]+/ig, partParam);
 				} else if (partAction == 'capture') {
 					newLine = curIndent + 'Capture'
 						+ formatCommonParams(/(screen|window|client|rect|to|file)|"[^"]*"|@[a-zA-Z_]+[a-zA-Z0-9_]*|-{0,1}[0-9]+/ig, partParam);

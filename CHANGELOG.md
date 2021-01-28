@@ -34,3 +34,12 @@ All notable changes to the "ScriptPro" extension will be documented in this file
 - FindModel action can use transparent colors now.
 ### Fixed
 - Correct a format problem for CheckPixel, FindPixel and FindModel actions.
+
+## [1.1.0] - 2020-01-28
+### Added
+- Added script tool that allow you record actions and get the pixel information from mouse point.
+- Added "Open script tool" to context menu.
+### Fixed
+- Correct image check problem for FindModel action.
+- Remove blank lines from debug output.
+

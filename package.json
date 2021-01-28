@@ -3,7 +3,7 @@
     "displayName": "ScriptPro",
     "description": "Edit ScriptPro scripts",
     "icon": "asset/ScriptPro.png",
-    "version": "1.0.3",
+    "version": "1.1.0",
     "author": "WebStory",
     "publisher": "WebStory",
     "engines": {
@@ -55,6 +55,11 @@
                 "title": "Run this script"
             },
             {
+                "command": "scriptpro.tool",
+                "category": "ScriptPro",
+                "title": "Open script tool"
+            },
+            {
                 "command": "scriptpro.upper",
                 "category": "ScriptPro",
                 "title": "To uppercase"
@@ -77,7 +82,11 @@
             },
             {
                 "command": "scriptpro.run",
-                "key": "ctrl+shift+r"
+                "key": "ctrl+alt+r"
+            },
+            {
+                "command": "scriptpro.tool",
+                "key": "ctrl+alt+t"
             }
         ],
         "menus": {
@@ -93,19 +102,24 @@
                 "group": "ScriptPro@2"
               },
               {
-                "when": "editorHasSelection",
-                "command": "scriptpro.upper",
+                "when": "resourceLangId == scriptpro",
+                "command": "scriptpro.tool",
                 "group": "ScriptPro@3"
               },
               {
                 "when": "editorHasSelection",
+                "command": "scriptpro.upper",
+                "group": "SPCommonGroup@1"
+              },
+              {
+                "when": "editorHasSelection",
                 "command": "scriptpro.lower",
-                "group": "ScriptPro@4"
+                "group": "SPCommonGroup@2"
               },
               {
                 "when": "editorHasSelection",
                 "command": "scriptpro.proper",
-                "group": "ScriptPro@5"
+                "group": "SPCommonGroup@3"
               }
             ]
         }
@@ -113,6 +127,7 @@
     "activationEvents": [
         "onCommand:scriptpro.format",
         "onCommand:scriptpro.run",
+        "onCommand:scriptpro.tool",
         "onCommand:scriptpro.upper",
         "onCommand:scriptpro.lower",
         "onCommand:scriptpro.proper"
