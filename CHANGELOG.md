@@ -43,3 +43,9 @@ All notable changes to the "ScriptPro" extension will be documented in this file
 - Correct image check problem for FindModel action.
 - Remove blank lines from debug output.
 
+## [1.1.1] - 2020-01-29
+### Added
+- Added "Format" action.
+- Added "format" snippet.
+- Allow "FindModel" action to match image ambiguously.
+

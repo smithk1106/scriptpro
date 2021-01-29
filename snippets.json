@@ -127,5 +127,13 @@
 			"Sound ${1:\"C:\\Windows\\media\\Ring10.wav\"} ${2:5000}"
 		],
 		"description": "Sound \"sound_file\" [play_time(Unit:ms)]"
+	},
+	"Format": {
+		"prefix": "format",
+		"body": [
+			"SetReturn @sRet",
+			"Format ${1:\"This script is {0}\"} ${2:@_ScriptFile}"
+		],
+		"description": "Format \"format string\" param1 param2 ..."
 	}
 }

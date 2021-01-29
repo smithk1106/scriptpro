@@ -1,7 +1,7 @@
 # ScriptPro
 
 A simple script language that can help you to do mouse and keyborad actions automaticly.
-You can use it to do some repeated works auto play some games.
+You can use it to do some duplicate works or play some games automatically.
 
 ## Features
 

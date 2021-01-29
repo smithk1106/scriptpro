@@ -191,29 +191,6 @@ export function activate(context: vscode.ExtensionContext) {
 						builder.replace(curRange, scriptBlock);
 						//builder.insert(lastLine.range.end, scriptBlock);
 					});
-
-					// let scriptBlock = '';
-					// const arrLines = strData.split(/[\r\n]+/);
-					// for (const i in arrLines) {
-					// 	const line = arrLines[i].trim();
-					// 	if (line.startsWith('[RECORD]')) {
-					// 		//console.log('[D]' + line.substring(8) + ' => ' + Buffer.from(line.substring(8), 'base64').toString());
-					// 		scriptBlock += Buffer.from(line.substring(8), 'base64').toString() + '\n';
-					// 	}
-					// }
-
-					// if(scriptBlock.length > 0) {
-					// 	console.log('[D]' + scriptBlock);
-					// 	const lastLine = editor.document.lineAt(editor.document.lineCount - 1);
-					// 	const curRange = new vscode.Range(
-					// 		lastLine.range.start,
-					// 		lastLine.range.end
-					// 	);
-					// 	editor.edit((builder: vscode.TextEditorEdit) => {
-					// 		builder.replace(curRange, scriptBlock);
-					// 		//builder.insert(lastLine.range.end, scriptBlock);
-					// 	});
-					// }
 				}
 			});
 			
@@ -414,6 +391,9 @@ function formatScript(text: string): string {
 						+ formatCommonParams(/"[^"]*"|@[a-zA-Z_]+[a-zA-Z0-9_]*|[0-9\.]+/g, partParam);
 				} else if (partAction == 'msgbox') {
 					newLine = curIndent + 'MsgBox'
+						+ formatCommonParams(/"[^"]*"|@[a-zA-Z_]+[a-zA-Z0-9_]*|[0-9\.]+/g, partParam);
+				} else if (partAction == 'format') {
+					newLine = curIndent + 'Format'
 						+ formatCommonParams(/"[^"]*"|@[a-zA-Z_]+[a-zA-Z0-9_]*|[0-9\.]+/g, partParam);
 				} else if (partAction == 'run') {
 					newLine = curIndent + 'Run'

@@ -27,7 +27,7 @@
 			"patterns": [
 				{
 					"name": "keyword.control.scriptpro",
-					"match": "(?i)\\b(if|then|else|endif|goto|setreturn|random|exit|delay|defdelay|call|include|use|unset)\\b"
+					"match": "(?i)\\b(if|then|else|endif|goto|setreturn|random|exit|delay|defdelay|call|include|use|unset|format)\\b"
 				},
 				{
 					"name": "keyword.mouse.scriptpro",
