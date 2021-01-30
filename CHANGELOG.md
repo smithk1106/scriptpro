@@ -49,3 +49,8 @@ All notable changes to the "ScriptPro" extension will be documented in this file
 - Added "format" snippet.
 - Allow "FindModel" action to match image ambiguously.
 
+## [1.1.2] - 2020-01-30
+### Added
+- Added Settings tab in script tool.
+### Fixed
+- fiexd type cast problem for "Mouse" action.
