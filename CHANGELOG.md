@@ -54,3 +54,16 @@ All notable changes to the "ScriptPro" extension will be documented in this file
 - Added Settings tab in script tool.
 ### Fixed
 - fiexd type cast problem for "Mouse" action.
+
+## [1.1.3] - 2020-02-02
+### Added
+- Added "FindPixel" snippet.
+### Fixed
+- Fixed script tool problem of getting origin information.
+
+## [1.1.4] - 2020-02-10
+### Added
+- Added "Code" action.
+- Added "Code" snippet.
+### Fixed
+- Fixed a runtime error for "Invoke" action.

@@ -2,6 +2,8 @@
 
 A simple script language that can help you to do mouse and keyborad actions automaticly.
 You can use it to do some duplicate works or play some games automatically.
+How to use ScriptPro? Just to create a xxx.sps file and edit it.
+The snippets and context menu can help you.
 
 ## Features
 

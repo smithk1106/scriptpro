@@ -82,7 +82,7 @@ export function activate(context: vscode.ExtensionContext) {
 			myChannel.appendLine('[i]Press "Ctrl+T" to stop the script.');
 			vscode.window.showInformationMessage('Start ' + scriptPath);
 			vscode.window.showInformationMessage('Press "Ctrl+T" to stop the script.');
-	
+
 			let cmdSpawn = process.spawn(payerPath, [ scriptPath, silentFlag ]);
 			cmdSpawn.stdout.on('data', function (data:any) {
 				const strData:string = data.toString();
@@ -91,11 +91,12 @@ export function activate(context: vscode.ExtensionContext) {
 			});
 			
 			cmdSpawn.stderr.on('data', function (data:any) {
-				console.log('[E]stderr: ' + data.toString());
-				myChannel.appendLine('[E]' + data.toString());
-
-				const dataStr = data.toString().trim();
+				console.log('[E]StdErr: ' + data.toString());
+				let dataStr = data.toString().trim();
 				if(dataStr.length > 0) {
+					dataStr = Buffer.from(dataStr, 'base64').toString().trim();
+					myChannel.appendLine('[E]' + dataStr);
+
 					let errorMsg = dataStr;
 					let pos = dataStr.indexOf('*');
 					let errorFile = '';
@@ -148,9 +149,6 @@ export function activate(context: vscode.ExtensionContext) {
 				vscode.window.showErrorMessage('Failed to start script player!');
 			});
 		}
-
-		// Display a message box to the user
-		//vscode.window.showInformationMessage('I am creating "scriptpro.run" now, please wait!');
 	});
 	context.subscriptions.push(runDisposable);
 
@@ -196,7 +194,7 @@ export function activate(context: vscode.ExtensionContext) {
 			
 			cmdSpawn.stderr.on('data', function (data:any) {
 				console.log('[E]stderr: ' + data.toString());
-				myChannel.appendLine('[E]' + data.toString());
+				myChannel.appendLine('[E]' + Buffer.from(data.toString(), 'base64').toString());
 			});
 
 			cmdSpawn.on('close', function (code:number) {
@@ -293,194 +291,199 @@ function formatScript(text: string): string {
 	let formatedText: string = '';
 	let lines = text.split('\n');
 	let curIndent: string = '';
+	let isCode = false;
 
 	for (const i in lines) {
-		let curLine: string = lines[i].trim().replace('\t', ' ');
+		let curLine: string = lines[i].trimEnd();
 		let pos: number;
 		let partAction: string, partParam: string;
 		let newLine: string = '';
 
 		if (curLine.length > 0) {
-			if (curLine.startsWith('@')) {
-				// Format variables
-				const match = curLine.match(/(@[a-zA-Z_]+[a-zA-Z0-9_]*)\s*(\:\=|\+\=|\-\=|\*\=|\%\=)\s*(.+)/);
-				if (match) {
-					newLine = util.format('%s%s %s %s', curIndent, match[1], match[2], match[3].trim());
-				}
-			} else if (curLine.startsWith(':')) {
-				// Format labels
+			if (isCode) {
 				newLine = curIndent + curLine;
 			} else {
-				// Split action part and parameter part
-				pos = curLine.indexOf(' ');
-				if (pos > 0) {
-					partAction = curLine.substring(0, pos);
-					partParam = curLine.substring(pos).trim();
+				curLine = curLine.trim().replace('\t', ' ');
+				if (curLine.startsWith('@')) {
+					// Format variables
+					const match = curLine.match(/(@[a-zA-Z_]+[a-zA-Z0-9_]*)\s*(\:\=|\+\=|\-\=|\*\=|\%\=)\s*(.+)/);
+					if (match) {
+						newLine = util.format('%s%s %s %s', curIndent, match[1], match[2], match[3].trim());
+					}
+				} else if (curLine.startsWith(':')) {
+					// Format labels
+					newLine = curIndent + curLine;
 				} else {
-					partAction = curLine;
-					partParam = '';
-				}
-				
-				// Check and format actions
-				partAction = partAction.toLowerCase();
-				if (partAction == 'if') {
-					const match = partParam.match(/(.+)\s+then$/i);
-					if (match) {
-						newLine = util.format('%sIf %s Then', curIndent, match[1].trim());
-					}
-					curIndent += '\t';
-				} else if (partAction == 'elseif') {
-					const match = partParam.match(/(.+)\s+then$/i);
-					if (curIndent.length > 0) curIndent = curIndent.substring(1);
-					if (match) {
-						newLine = util.format('%sElseIf %s Then', curIndent, match[1].trim());
+					// Split action part and parameter part
+					pos = curLine.indexOf(' ');
+					if (pos > 0) {
+						partAction = curLine.substring(0, pos);
+						partParam = curLine.substring(pos).trim();
 					} else {
-						newLine = util.format('%sElseIf %s', curIndent, partParam);
+						partAction = curLine;
+						partParam = '';
 					}
-					curIndent += '\t';
-				} else if (partAction == 'else') {
-					if (curIndent.length > 0) curIndent = curIndent.substring(1);
-					newLine = curIndent + 'Else';
-					curIndent += '\t';
-				} else if (partAction == 'endif') {
-					if (curIndent.length > 0) curIndent = curIndent.substring(1);
-					newLine = curIndent + 'EndIf';
-				} else if (partAction == 'goto') {
-					const match = partParam.match(/\:{0,1}([a-zA-Z_]+[a-zA-Z0-9_]*)/i);
-					if (match) {
-						newLine = util.format('%sGoto :%s', curIndent, match[1]);
-					} else {
-						newLine = util.format('%sGoto %s', curIndent, partParam);
-					}
-				} else if (partAction == 'exit') {
-					newLine = curIndent + 'Exit';
-				} else if (partAction == 'delay') {
-					newLine = util.format('%sDelay %s', curIndent, partParam);
-				} else if (partAction == 'defdelay') {
-					newLine = util.format('%sDefDelay %s', curIndent, partParam);
-				} else if (partAction == 'use') {
-					newLine = util.format('%sUse %s', curIndent, partParam);
-				} else if (partAction == 'unset') {
-					newLine = curIndent + 'Unset'
-						+ formatCommonParams(/@[a-zA-Z_]+[a-zA-Z0-9_]*/g, partParam);
-				} else if (partAction == 'setreturn') {
-					newLine = curIndent + 'SetReturn'
-						+ formatCommonParams(/@[a-zA-Z_]+[a-zA-Z0-9_]*/g, partParam);
-				} else if (partAction == 'random') {
-					newLine = curIndent + 'Random'
-						+ formatCommonParams(/@[a-zA-Z_]+[a-zA-Z0-9_]*|[0-9\.]+/g, partParam);
-				} else if (partAction == 'call') {
-					newLine = curIndent + 'Call'
-						+ formatCommonParams(/"[^"]*"|@[a-zA-Z_]+[a-zA-Z0-9_]*|[0-9\.]+/g, partParam);
-				} else if (partAction == 'include') {
-					newLine = curIndent + 'Include'
-						+ formatCommonParams(/"[^"]*"|@[a-zA-Z_]+[a-zA-Z0-9_]*/g, partParam);
-				} else if (partAction == 'onerror') {
-					const match = partParam.match(/(resume|goto|exit)\s*(.*)/i);
-					if (match) {
-						if (match[1].toLowerCase() == 'resume') {
-							newLine = curIndent + 'OnError Resume Next';
-						} else if (match[1].toLowerCase() == 'resume') {
-							newLine = util.format('%sOnError Goto %s', curIndent, match[2].trim());
-						} else {
-							newLine = curIndent + 'OnError Exit';
-						}
-					}
-				} else if (partAction == 'invoke') {
-					newLine = curIndent + 'Invoke'
-						+ formatCommonParams(/"[^"]*"|@[a-zA-Z_]+[a-zA-Z0-9_]*|[0-9\.]+/g, partParam);
-				} else if (partAction == 'msgbox') {
-					newLine = curIndent + 'MsgBox'
-						+ formatCommonParams(/"[^"]*"|@[a-zA-Z_]+[a-zA-Z0-9_]*|[0-9\.]+/g, partParam);
-				} else if (partAction == 'format') {
-					newLine = curIndent + 'Format'
-						+ formatCommonParams(/"[^"]*"|@[a-zA-Z_]+[a-zA-Z0-9_]*|[0-9\.]+/g, partParam);
-				} else if (partAction == 'run') {
-					newLine = curIndent + 'Run'
-						+ formatCommonParams(/"[^"]*"|@[a-zA-Z_]+[a-zA-Z0-9_]*|[0-9\.]+/g, partParam);
-				} else if (partAction == 'runandwait') {
-					newLine = curIndent + 'RunAndWait'
-						+ formatCommonParams(/"[^"]*"|@[a-zA-Z_]+[a-zA-Z0-9_]*|[0-9\.]+/g, partParam);
-				} else if (partAction == 'monitor') {
-					if (partParam.toLowerCase() == 'on') {
-						newLine = curIndent + 'Monitor On';
-					} else {
-						newLine = curIndent + 'Monitor Off';
-					}
-				} else if (partAction == 'messagemode') {
-					if (partParam.toLowerCase() == 'on') {
-						newLine = curIndent + 'MessageMode On';
-					} else {
-						newLine = curIndent + 'MessageMode Off';
-					}
-				} else if (partAction == 'checkpixel') {
-					newLine = curIndent + 'CheckPixel'
-						+ formatCommonParams(/(at|offset)|#[0-9A-F]{1,6}:{0,1}[0-9A-F]{0,2}|@[a-zA-Z_]+[a-zA-Z0-9_]*|[ \t,]+-{0,1}[0-9]+/ig, partParam);
-				} else if (partAction == 'findpixel') {
-					newLine = curIndent + 'FindPixel'
-						+ formatCommonParams(/(inrect|repeat)|#[0-9A-F]{1,6}:{0,1}[0-9A-F]{0,2}|@{0,1}[a-zA-Z_]+[a-zA-Z0-9_]*|[ \t,]+-{0,1}[0-9]+/ig, partParam);
-				} else if (partAction == 'findmodel') {
-					newLine = curIndent + 'FindModel'
-						+ formatCommonParams(/(inrect|preload|wait|by)|#[0-9A-F]{1,6}:{0,1}[0-9A-F]{0,2}|"[^"]*"|@[a-zA-Z_]+[a-zA-Z0-9_]*|[ \t,]+-{0,1}[0-9]+/ig, partParam);
-				} else if (partAction == 'capture') {
-					newLine = curIndent + 'Capture'
-						+ formatCommonParams(/(screen|window|client|rect|to|file)|"[^"]*"|@[a-zA-Z_]+[a-zA-Z0-9_]*|-{0,1}[0-9]+/ig, partParam);
-				} else if (partAction == 'key') {
-					newLine = curIndent + 'Key'
-						+ formatCommonParams(/(down|up|press)|[a-zA-Z0-9]+/ig, partParam);
-				} else if (partAction == 'sendkeys') {
-					newLine = util.format('%sSendKeys %s', curIndent, partParam);
-				} else if (partAction == 'settext') {
-					newLine = util.format('%sSetText %s', curIndent, partParam);
-				} else if (partAction == 'gettext') {
-					newLine = util.format('%sGetText %s', curIndent, partParam);
-				} else if (partAction == 'origin') {
-					const matches = matchAll(/(from|point|null|LT|LB|RT|RB|TL|BL|TR|BR)|"[^"]*"|@[a-zA-Z_]+[a-zA-Z0-9_]*|-{0,1}[0-9]+/ig, partParam);
 					
-					newLine = curIndent + 'Origin';
-					if (matches.length > 1) {
-						if(matches[0][1] && matches[0][1].toLowerCase() == 'from'){
-							newLine += ' From';
-							if(matches[1][1] && matches[1][1].toLowerCase() == 'point'){
-								newLine += ' Point';
-								pos = 2;
-							} else {
-								pos = 1;
-							}
+					// Check and format actions
+					partAction = partAction.toLowerCase();
+					if (partAction == 'code') {
+						newLine = curIndent + 'Code';
+						const match = partParam.match(/"([^"]+)"/i);
+						if (match) {
+							newLine += ' "' + match[1].trim().toUpperCase() + '"';
 						} else {
-							pos = 0;
+							newLine += ' "C#"';
 						}
-
-						for(; pos < matches.length; pos++){
-							if(matches[pos][1] && matches[pos][1].length > 0) {
-								if(matches[pos][1].toLowerCase() == 'null') {
-									newLine += ' Null';
+						isCode = true;
+					} else if (partAction == 'endcode') {
+						newLine = curIndent + 'EndCode';
+						isCode = false;
+					} else if (partAction == 'if') {
+						const match = partParam.match(/(.+)\s+then$/i);
+						if (match) {
+							newLine = util.format('%sIf %s Then', curIndent, match[1].trim());
+						}
+						curIndent += '\t';
+					} else if (partAction == 'elseif') {
+						const match = partParam.match(/(.+)\s+then$/i);
+						if (curIndent.length > 0) curIndent = curIndent.substring(1);
+						if (match) {
+							newLine = util.format('%sElseIf %s Then', curIndent, match[1].trim());
+						} else {
+							newLine = util.format('%sElseIf %s', curIndent, partParam);
+						}
+						curIndent += '\t';
+					} else if (partAction == 'else') {
+						if (curIndent.length > 0) curIndent = curIndent.substring(1);
+						newLine = curIndent + 'Else';
+						curIndent += '\t';
+					} else if (partAction == 'endif') {
+						if (curIndent.length > 0) curIndent = curIndent.substring(1);
+						newLine = curIndent + 'EndIf';
+					} else if (partAction == 'goto') {
+						const match = partParam.match(/\:{0,1}([a-zA-Z_]+[a-zA-Z0-9_]*)/i);
+						if (match) {
+							newLine = util.format('%sGoto :%s', curIndent, match[1]);
+						} else {
+							newLine = util.format('%sGoto %s', curIndent, partParam);
+						}
+					} else if (partAction == 'exit') {
+						newLine = curIndent + 'Exit';
+					} else if (partAction == 'delay') {
+						newLine = util.format('%sDelay %s', curIndent, partParam);
+					} else if (partAction == 'defdelay') {
+						newLine = util.format('%sDefDelay %s', curIndent, partParam);
+					} else if (partAction == 'use') {
+						newLine = util.format('%sUse %s', curIndent, partParam);
+					} else if (partAction == 'unset') {
+						newLine = curIndent + 'Unset'
+							+ formatCommonParams(/@[a-zA-Z_]+[a-zA-Z0-9_]*/g, partParam);
+					} else if (partAction == 'setreturn') {
+						newLine = curIndent + 'SetReturn'
+							+ formatCommonParams(/@[a-zA-Z_]+[a-zA-Z0-9_]*/g, partParam);
+					} else if (partAction == 'random') {
+						newLine = curIndent + 'Random'
+							+ formatCommonParams(/@[a-zA-Z_]+[a-zA-Z0-9_]*|[0-9\.]+/g, partParam);
+					} else if (partAction == 'call') {
+						newLine = curIndent + 'Call'
+							+ formatCommonParams(/"[^"]*"|@[a-zA-Z_]+[a-zA-Z0-9_]*|[0-9\.]+/g, partParam);
+					} else if (partAction == 'include') {
+						newLine = curIndent + 'Include'
+							+ formatCommonParams(/"[^"]*"|@[a-zA-Z_]+[a-zA-Z0-9_]*/g, partParam);
+					} else if (partAction == 'onerror') {
+						const match = partParam.match(/(resume|goto|exit)\s*(.*)/i);
+						if (match) {
+							if (match[1].toLowerCase() == 'resume') {
+								newLine = curIndent + 'OnError Resume Next';
+							} else if (match[1].toLowerCase() == 'resume') {
+								newLine = util.format('%sOnError Goto %s', curIndent, match[2].trim());
+							} else {
+								newLine = curIndent + 'OnError Exit';
+							}
+						}
+					} else if (partAction == 'invoke') {
+						newLine = curIndent + 'Invoke'
+							+ formatCommonParams(/"[^"]*"|@[a-zA-Z_]+[a-zA-Z0-9_]*|[0-9\.]+/g, partParam);
+					} else if (partAction == 'msgbox') {
+						newLine = curIndent + 'MsgBox'
+							+ formatCommonParams(/"[^"]*"|@[a-zA-Z_]+[a-zA-Z0-9_]*|[0-9\.]+/g, partParam);
+					} else if (partAction == 'format') {
+						newLine = curIndent + 'Format'
+							+ formatCommonParams(/"[^"]*"|@[a-zA-Z_]+[a-zA-Z0-9_]*|[0-9\.]+/g, partParam);
+					} else if (partAction == 'run') {
+						newLine = curIndent + 'Run'
+							+ formatCommonParams(/"[^"]*"|@[a-zA-Z_]+[a-zA-Z0-9_]*|[0-9\.]+/g, partParam);
+					} else if (partAction == 'runandwait') {
+						newLine = curIndent + 'RunAndWait'
+							+ formatCommonParams(/"[^"]*"|@[a-zA-Z_]+[a-zA-Z0-9_]*|[0-9\.]+/g, partParam);
+					} else if (partAction == 'monitor') {
+						if (partParam.toLowerCase() == 'on') {
+							newLine = curIndent + 'Monitor On';
+						} else {
+							newLine = curIndent + 'Monitor Off';
+						}
+					} else if (partAction == 'messagemode') {
+						if (partParam.toLowerCase() == 'on') {
+							newLine = curIndent + 'MessageMode On';
+						} else {
+							newLine = curIndent + 'MessageMode Off';
+						}
+					} else if (partAction == 'checkpixel') {
+						newLine = curIndent + 'CheckPixel'
+							+ formatCommonParams(/(at|offset)|#[0-9A-F]{1,6}:{0,1}[0-9A-F]{0,2}|@[a-zA-Z_]+[a-zA-Z0-9_]*|[ \t,]+-{0,1}[0-9]+/ig, partParam);
+					} else if (partAction == 'findpixel') {
+						newLine = curIndent + 'FindPixel'
+							+ formatCommonParams(/(inrect|repeat)|#[0-9A-F]{1,6}:{0,1}[0-9A-F]{0,2}|@{0,1}[a-zA-Z_]+[a-zA-Z0-9_]*|[ \t,]+-{0,1}[0-9]+/ig, partParam);
+					} else if (partAction == 'findmodel') {
+						newLine = curIndent + 'FindModel'
+							+ formatCommonParams(/(inrect|preload|wait|by)|#[0-9A-F]{1,6}:{0,1}[0-9A-F]{0,2}|"[^"]*"|@[a-zA-Z_]+[a-zA-Z0-9_]*|[ \t,]+-{0,1}[0-9]+/ig, partParam);
+					} else if (partAction == 'capture') {
+						newLine = curIndent + 'Capture'
+							+ formatCommonParams(/(screen|window|client|rect|to|file)|"[^"]*"|@[a-zA-Z_]+[a-zA-Z0-9_]*|-{0,1}[0-9]+/ig, partParam);
+					} else if (partAction == 'key') {
+						newLine = curIndent + 'Key'
+							+ formatCommonParams(/(down|up|press)|[a-zA-Z0-9]+/ig, partParam);
+					} else if (partAction == 'sendkeys') {
+						newLine = util.format('%sSendKeys %s', curIndent, partParam);
+					} else if (partAction == 'settext') {
+						newLine = util.format('%sSetText %s', curIndent, partParam);
+					} else if (partAction == 'gettext') {
+						newLine = util.format('%sGetText %s', curIndent, partParam);
+					} else if (partAction == 'origin') {
+						const matches = matchAll(/(from|point|null|LT|LB|RT|RB|TL|BL|TR|BR)|"[^"]*"|@[a-zA-Z_]+[a-zA-Z0-9_]*|-{0,1}[0-9]+/ig, partParam);
+						
+						newLine = curIndent + 'Origin';
+						if (matches.length > 1) {
+							if(matches[0][1] && matches[0][1].toLowerCase() == 'from'){
+								newLine += ' From';
+								if(matches[1][1] && matches[1][1].toLowerCase() == 'point'){
+									newLine += ' Point';
+									pos = 2;
 								} else {
-									newLine += ' ' + matches[pos][1].toUpperCase();
+									pos = 1;
 								}
 							} else {
-								newLine += ' ' + matches[pos][0];
+								pos = 0;
 							}
+
+							for(; pos < matches.length; pos++){
+								if(matches[pos][1] && matches[pos][1].length > 0) {
+									if(matches[pos][1].toLowerCase() == 'null') {
+										newLine += ' Null';
+									} else {
+										newLine += ' ' + matches[pos][1].toUpperCase();
+									}
+								} else {
+									newLine += ' ' + matches[pos][0];
+								}
+							}
+						} else {
+							newLine += formatCommonParams(/"[^"]*"|@{0,1}[a-zA-Z_]+[a-zA-Z0-9_]*|[0-9]+/g, partParam);
 						}
-					} else {
-						newLine += formatCommonParams(/"[^"]*"|@{0,1}[a-zA-Z_]+[a-zA-Z0-9_]*|[0-9]+/g, partParam);
+					} else if (partAction == 'mouse') {
+						newLine = curIndent + 'Mouse';
+						newLine += formatCommonParams(/(left|right|middle|move|down|up|click|doubleclick|at|offset)|@[a-zA-Z_]+[a-zA-Z0-9_]*|-{0,1}\d+/ig, partParam);
 					}
-				} else if (partAction == 'mouse') {
-					//const matches = matchAll(/(left|right|middle|move|down|up|click|doubleclick|at|offset)|@[a-zA-Z_]+[a-zA-Z0-9_]*|-{0,1}\d+/g, partParam);
-					
-					newLine = curIndent + 'Mouse';
-					// if (matches.length > 0) {
-					// 	console.log(matches);	//DEBUG
-					// 	for(pos = 0; pos < matches.length; pos++){
-					// 		let groupText = matches[pos][1];
-					// 		if(groupText && groupText.length > 0) {
-					// 			newLine += ' ' + groupText.charAt(0).toUpperCase() + groupText.substring(1).toLowerCase();
-					// 		} else {
-					// 			newLine += ' ' + matches[pos][0];
-					// 		}
-					// 	}
-					// }
-					newLine += formatCommonParams(/(left|right|middle|move|down|up|click|doubleclick|at|offset)|@[a-zA-Z_]+[a-zA-Z0-9_]*|-{0,1}\d+/ig, partParam);
 				}
 			}
 

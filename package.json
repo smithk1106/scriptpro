@@ -3,7 +3,7 @@
     "displayName": "ScriptPro",
     "description": "Edit ScriptPro scripts",
     "icon": "asset/ScriptPro.png",
-    "version": "1.1.2",
+    "version": "1.1.4",
     "author": "WebStory",
     "publisher": "WebStory",
     "engines": {

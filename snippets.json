@@ -79,17 +79,29 @@
 		],
 		"description": "CheckPixel #RRGGBB At X Y"
 	},
+	"FindPixel": {
+		"prefix": "findPixel",
+		"body": [
+			"SetReturn @lRet @lX @lY",
+			"FindPixel ${1:#FFFFFF} InRect ${2:x} ${3:y} ${2:width} ${3:height} Repeat 1 1",
+			"If @lRet == 0 Then",
+			"\tMsgBox \"Can't find target color!\" \"Error\" 0 16",
+			"\tExit",
+			"EndIf"
+		],
+		"description": "FindPixel #RRGGBB[:tolerance] At InRect x y width height [Repeat x y]"
+	},
 	"FindModel": {
 		"prefix": "findmodel",
 		"body": [
-			"SetReturn @lRet",
+			"SetReturn @lRet @lX @lY",
 			"FindModel ${1:\"model.png\"} InRect ${2:Left} ${3:Top} ${4:Right} ${5:Bottom} By #FFFFFF:1F",
 			"If @lRet == 0 Then",
 			"\tMsgBox \"Can't find the target model!\" \"Error\" 0 16",
 			"\tExit",
 			"EndIf"
 		],
-		"description": "FindModel \"model.png\" InRect Left Top Right Bottom[ By #web_color_1:[Tolerance_1] #web_color_2:[Tolerance_2] ...]"
+		"description": "FindModel \"model.png\" InRect left top width height[ By #web_color_1[:tolerance_1] #web_color_2[:tolerance_2] ...]"
 	},
 
 	"Run": {
@@ -112,6 +124,19 @@
 			"MsgBox ${1:\"message\"} ${2:\"Error\"} 0 16"
 		],
 		"description": "MsgBox \"message\" \"title\" [button_type_code] [icon_type_code]"
+	},
+	"Code": {
+		"prefix": "code",
+		"body": [
+			"Code \"C#\"",
+			"public static string main(string arg1) {",
+			"\treturn \"Hello, \" + args1 + \". Today is \" + DateTime.Today.ToString(\"yyyy-MM-dd\");",
+			"}",
+			"EndCode",
+			"SetReturn @sRet",
+			"Invoke \"main\" \"world\""
+		],
+		"description": "Code \"C#|VB\""
 	},
 	"Invoke": {
 		"prefix": "invoke",
