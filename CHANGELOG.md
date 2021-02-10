@@ -67,3 +67,16 @@ All notable changes to the "ScriptPro" extension will be documented in this file
 - Added "Code" snippet.
 ### Fixed
 - Fixed a runtime error for "Invoke" action.
+
+## [1.1.5] - 2020-02-10
+### Added
+- Added following constants for "MsgBox" action.
+  - BtnOK
+  - BtnOKCancel
+  - IconInfo
+  - IconWarn
+  - IconError
+  - IconQuestion
+
+### Fixed
+- Fixed error message display problem.

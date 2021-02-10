@@ -121,9 +121,9 @@
 	"MsgBox": {
 		"prefix": "msgbox",
 		"body": [
-			"MsgBox ${1:\"message\"} ${2:\"Error\"} 0 16"
+			"MsgBox ${1:\"message\"} ${2:\"Error\"} ${3|BtnOK,BtnOKCancel|} ${4|IconInfo,IconWarn,IconError,IconQuestion|}"
 		],
-		"description": "MsgBox \"message\" \"title\" [button_type_code] [icon_type_code]"
+		"description": "MsgBox \"message\" [\"title\"] [button_type_code] [icon_type_code]"
 	},
 	"Code": {
 		"prefix": "code",
