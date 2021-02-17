@@ -77,6 +77,10 @@ All notable changes to the "ScriptPro" extension will be documented in this file
   - IconWarn
   - IconError
   - IconQuestion
-
 ### Fixed
 - Fixed error message display problem.
+
+## [1.1.6] - 2020-02-17
+### Fixed
+- Fixed "ElseIf" can not be highlight problem.
+- Fixed "Code" block format problem.

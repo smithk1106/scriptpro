@@ -28,7 +28,7 @@
 			"Call \"${1:sub_script}.sps\" ${2:param1}",
 			"SetReturn @sMessage",
 			"Invoke \"System.String.Format\" \"Call result: {0}\" @CallReturn",
-			"MsgBox @sMessage \"Information\" 0 16"
+			"MsgBox @sMessage \"Information\" BtnOK IconError"
 		],
 		"description": "Call \"sub_script.sps\" param1 param2 ..."
 	},
@@ -46,7 +46,7 @@
 			"SetReturn @lRet @lX @lY",
 			"Origin From \"${1:window_tile}\" \"${2:window_class}\"",
 			"If @lRet != 0 Then",
-			"\tMsgBox \"${3:Can't find the target window.}\" \"Error\" 0 16",
+			"\tMsgBox \"${3:Can't find the target window.}\" \"Error\" BtnOK IconError",
 			"\tExit",
 			"EndIf"
 		],
@@ -73,7 +73,7 @@
 			"SetReturn @lRet",
 			"CheckPixel ${1:#FFFFFF} At ${2:X} ${3:Y}",
 			"If @lRet == 0 Then",
-			"\tMsgBox \"The color at X, Y is not right.\" \"Error\" 0 16",
+			"\tMsgBox \"The color at X, Y is not right.\" \"Error\" BtnOK IconError",
 			"\tExit",
 			"EndIf"
 		],
@@ -85,7 +85,7 @@
 			"SetReturn @lRet @lX @lY",
 			"FindPixel ${1:#FFFFFF} InRect ${2:x} ${3:y} ${2:width} ${3:height} Repeat 1 1",
 			"If @lRet == 0 Then",
-			"\tMsgBox \"Can't find target color!\" \"Error\" 0 16",
+			"\tMsgBox \"Can't find target color!\" \"Error\" BtnOK IconError",
 			"\tExit",
 			"EndIf"
 		],
@@ -97,7 +97,7 @@
 			"SetReturn @lRet @lX @lY",
 			"FindModel ${1:\"model.png\"} InRect ${2:Left} ${3:Top} ${4:Right} ${5:Bottom} By #FFFFFF:1F",
 			"If @lRet == 0 Then",
-			"\tMsgBox \"Can't find the target model!\" \"Error\" 0 16",
+			"\tMsgBox \"Can't find the target model!\" \"Error\" BtnOK IconError",
 			"\tExit",
 			"EndIf"
 		],

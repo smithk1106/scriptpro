@@ -301,7 +301,13 @@ function formatScript(text: string): string {
 
 		if (curLine.length > 0) {
 			if (isCode) {
-				newLine = curIndent + curLine;
+				if (curLine.trim().toLowerCase().endsWith('endcode')) {
+					if (curIndent.length > 0) curIndent = curIndent.substring(1);
+					newLine = curIndent + 'EndCode';
+					isCode = false;
+				} else {
+					newLine = curIndent + curLine;
+				}
 			} else {
 				curLine = curLine.trim().replace('\t', ' ');
 				if (curLine.startsWith('@')) {
@@ -335,9 +341,7 @@ function formatScript(text: string): string {
 							newLine += ' "C#"';
 						}
 						isCode = true;
-					} else if (partAction == 'endcode') {
-						newLine = curIndent + 'EndCode';
-						isCode = false;
+						curIndent += '\t';
 					} else if (partAction == 'if') {
 						const match = partParam.match(/(.+)\s+then$/i);
 						if (match) {
