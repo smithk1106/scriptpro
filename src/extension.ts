@@ -7,7 +7,7 @@ import { Buffer } from 'buffer';
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-	const myChannel = vscode.window.createOutputChannel("ScritPro");
+	const myChannel = vscode.window.createOutputChannel("ScriptPro");
 
 	// Use the console to output diagnostic information (console.log) and errors (console.error)
 	// This line of code will only be executed once when your extension is activated
@@ -302,7 +302,7 @@ function formatScript(text: string): string {
 		if (curLine.length > 0) {
 			if (isCode) {
 				if (curLine.trim().toLowerCase().endsWith('endcode')) {
-					if (curIndent.length > 0) curIndent = curIndent.substring(1);
+					//if (curIndent.length > 0) curIndent = curIndent.substring(1);
 					newLine = curIndent + 'EndCode';
 					isCode = false;
 				} else {
@@ -341,7 +341,7 @@ function formatScript(text: string): string {
 							newLine += ' "C#"';
 						}
 						isCode = true;
-						curIndent += '\t';
+						//curIndent += '\t';
 					} else if (partAction == 'if') {
 						const match = partParam.match(/(.+)\s+then$/i);
 						if (match) {
@@ -409,8 +409,30 @@ function formatScript(text: string): string {
 						newLine = curIndent + 'Invoke'
 							+ formatCommonParams(/"[^"]*"|@[a-zA-Z_]+[a-zA-Z0-9_]*|[0-9\.]+/g, partParam);
 					} else if (partAction == 'msgbox') {
-						newLine = curIndent + 'MsgBox'
-							+ formatCommonParams(/"[^"]*"|@[a-zA-Z_]+[a-zA-Z0-9_]*|[0-9\.]+/g, partParam);
+						const matches = matchAll(/"[^"]*"|(BtnOK|BtnOKCancel|IconInfo|IconWarn|IconError|IconQuestion)|@[a-zA-Z_]+[a-zA-Z0-9_]*|[0-9\.]+/ig, partParam);
+
+						console.log(matches);
+						newLine = curIndent + 'MsgBox';
+						for(pos = 0; pos < matches.length; pos++) {
+							if(matches[pos][1]){
+								let strItem = matches[pos][1].toLowerCase();
+								if(strItem.indexOf('btnok') >= 0) {
+									newLine += " BtnOK";
+								} else if(strItem.indexOf('btnokcancel') >= 0) {
+									newLine += " BtnOKCancel";
+								} else if(strItem.indexOf('iconinfo') >= 0) {
+									newLine += " IconInfo";
+								} else if(strItem.indexOf('iconwarn') >= 0) {
+									newLine += " IconWarn";
+								} else if(strItem.indexOf('iconerror') >= 0) {
+									newLine += " IconError";
+								} else if(strItem.indexOf('iconquestion') >= 0) {
+									newLine += " IconQuestion";
+								}
+							} else {
+								newLine += ' ' + matches[pos][0];
+							}
+						}
 					} else if (partAction == 'format') {
 						newLine = curIndent + 'Format'
 							+ formatCommonParams(/"[^"]*"|@[a-zA-Z_]+[a-zA-Z0-9_]*|[0-9\.]+/g, partParam);

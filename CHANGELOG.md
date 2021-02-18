@@ -84,3 +84,11 @@ All notable changes to the "ScriptPro" extension will be documented in this file
 ### Fixed
 - Fixed "ElseIf" can not be highlight problem.
 - Fixed "Code" block format problem.
+
+## [1.1.7] - 2020-02-18
+### Changed
+- Adjusted settings form.
+### Fixed
+- Modify paramters for "MsgBox" in snippets.
+- Fixed format problem for "MsgBox" action
+- Fixed the spell miss in console. 
