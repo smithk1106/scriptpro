@@ -177,8 +177,8 @@ export function activate(context: vscode.ExtensionContext) {
 			cmdSpawn.stdout.on('data', function (data:any) {
 				const strData:string = data.toString().trim();
 				console.log(strData);
-				myChannel.append(strData);
 				if(strData.startsWith('[RECORD]')) {
+					myChannel.appendLine('[i]Recieve recorded actions.');
 					const lastLine = editor.document.lineAt(editor.document.lineCount - 1);
 					const curRange = new vscode.Range(
 						lastLine.range.start,
@@ -189,6 +189,19 @@ export function activate(context: vscode.ExtensionContext) {
 						builder.replace(curRange, scriptBlock);
 						//builder.insert(lastLine.range.end, scriptBlock);
 					});
+				} else if(strData.startsWith('[INSERT]')) {
+					myChannel.appendLine('[i]Insert action.');
+					const curRange = new vscode.Range(
+						editor.selection.active,
+						editor.selection.active
+					);
+					editor.edit((builder: vscode.TextEditorEdit) => {
+						let scriptBlock = Buffer.from(strData.substring(8), 'base64').toString();
+						builder.replace(curRange, scriptBlock);
+						//builder.insert(lastLine.range.end, scriptBlock);
+					});
+				} else {
+					myChannel.appendLine(strData);
 				}
 			});
 			

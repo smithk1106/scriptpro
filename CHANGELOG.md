@@ -92,3 +92,7 @@ All notable changes to the "ScriptPro" extension will be documented in this file
 - Modify paramters for "MsgBox" in snippets.
 - Fixed format problem for "MsgBox" action
 - Fixed the spell miss in console. 
+
+## [1.1.8] - 2020-04-04
+### Added
+- Added insert origin button and related functions.
